@@ -1,33 +1,27 @@
 #!/bin/bash
-# 192.168.1.110 - Raspberry PI SERVER
-# 192.168.1.190 - HP Omni
-# 192.168.1.191 - Acer
-# 192.168.1.192 - Compaq
+# THIS FILE FOR SERVER
 
 IP=$(hostname -I | awk '{print $1}')
-MySyncDirectory="MOE"
+MySyncDirectory="/media/pi/07b6b844-0c3a-4e62-bb3d-b51cc61a5c0a/MOE"
 
 #MainTxtFile="main_sync_computer.txt"
 #echo $IP > $MainTxtFile | scp $MainTxtFile $SUB_USER@$SUB_IP:$SUB_DEST
 
 # Define each array and then add it to the main one
-# SERVER
-SUB_1=("192.168.1.110" "pi" "/media/pi/07b6b844-0c3a-4e62-bb3d-b51cc61a5c0a") # Rapberry PI
 
 # SYNC COMPUTERS
-SUB_2=("192.168.1.190" "laptopsr" "~") # HP Omni
-SUB_3=("192.168.1.191" "laptopsr" "~") # Acer
-SUB_4=("192.168.1.192" "laptopsr" "~") # Compaq
+SUB_1=("192.168.1.190" "laptopsr" "~") # HP Omni
+SUB_2=("192.168.1.191" "laptopsr" "~") # Acer
+SUB_3=("192.168.1.192" "laptopsr" "~") # Compaq
 
 MAIN_ARRAY=(
   SUB_1[@]
   SUB_2[@]
   SUB_3[@]
-  SUB_4[@]
 )
 
 #modify,create,delete,move,open,moved_to,moved_from
-inotifywait -e create,modify,delete,move -r -m $HOME/$MySyncDirectory --exclude '\.sh$' |
+inotifywait -e create,modify,delete,move -r -m $MySyncDirectory --exclude '\.sh$' |
 while read dir action file; 
 do
 
@@ -66,8 +60,10 @@ do
 		if ping -c 1 $SUB_IP > /dev/null 2>&1;
 		then
 			if [ "$IP" != "$SUB_IP" ]; then
-				echo "Sending... $SUB_USER@$SUB_IP:$SUB_DEST" > /tmp/rsync.log
-				rsync -avu --delete $HOME/$MySyncDirectory $SUB_USER@$SUB_IP:$SUB_DEST --log-file=/tmp/rsync.log
+				echo "----ACTION: ($action)" > /tmp/rsync.log
+				echo "------FILE: ($file)" > /tmp/rsync.log
+				echo "---SEND TO: $SUB_USER@$SUB_IP:$SUB_DEST" > /tmp/rsync.log
+				rsync -av --delete $MySyncDirectory $SUB_USER@$SUB_IP:$SUB_DEST --log-file=/tmp/rsync.log
 			fi
 			
 		else
