@@ -1,0 +1,1 @@
+@reboot sleep 20; rsync -av --delete pi@192.168.1.110:/media/pi/07b6b844-0c3a-4e62-bb3d-b51cc61a5c0a/MOE /home/laptopsr/ --log-file=/tmp/rsync.log && bash /home/laptopsr/MOE/rsync_inotifywait.sh
