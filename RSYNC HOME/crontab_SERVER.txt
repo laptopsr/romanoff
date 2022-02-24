@@ -1,1 +1,1 @@
-@reboot sleep 20; bash /media/pi/07b6b844-0c3a-4e62-bb3d-b51cc61a5c0a/MOE/rsync_SERVER.sh
+@reboot sleep 20; bash /media/pi/07b6b844-0c3a-4e62-bb3d-b51cc61a5c0a/MOE/rsync/rsync_SERVER.sh

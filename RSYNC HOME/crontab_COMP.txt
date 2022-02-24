@@ -1,1 +1,1 @@
-@reboot sleep 20; bash /home/laptopsr/MOE/rsync_COMP.sh
+@reboot sleep 20; bash /home/laptopsr/MOE/rsync/rsync_COMP.sh
