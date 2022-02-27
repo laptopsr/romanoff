@@ -23,31 +23,46 @@ MAIN_ARRAY=(
   SUB_4[@]
 )
 
-#modify,create,delete,move,open,moved_to,moved_from
-inotifywait -e create,modify,delete,move -r -m $MySyncDirectory --exclude '\.sh$' |
-while read dir action file; 
+#close_write,create,modify,delete,move,open,moved_to,moved_from
+inotifywait -e close_write,delete,create -r -m $MySyncDirectory --format '%e %f' |
+while read action file;
 do
 
-	if [[ $file == ".goutputstream"* ]] && [ $action != "MODIFY" ]; then
-	  continue
+	if [ $action == "CREATE" ]; then
+		continue
 	fi
-
-	if [[ (($action == "MOVED_FROM,ISDIR") && ($file == "untitled folder")) ]]; then
+	
+: '
+	if [ "$file" == "$LAST_FILE" ]; then
 		continue
 	fi
 
-	if [[ (($action == "MOVED_FROM") && ($file == "new file")) ]]; then
+	if [[ (($action == "CREATE") && ($file == "new file")) ]]; then
 		continue
 	fi
+
+	if [[ (($action == "MODIFY") && ($file == "new file")) ]]; then
+		continue
+	fi
+
+	if [[ (($action == "CREATE,ISDIR") && ($file == "untitled folder")) ]]; then
+		continue
+	fi
+'
+	echo -en "\n----------------\n$action - ($file)\n----------------\n"
+
+	#echo "$action - ($file) : ($LAST_FILE)"
+	#LAST_FILE=$file
+	#continue
 
 	echo "-------------"
 	echo "---$dir---"
 	echo "---$action---"
 	echo "---$file---"
 	echo "-------------"
-	
+
 	#continue
-	
+
 	MAIN_IP_FROM=$(cat $TMP_FILE)
 
 	# Loop and print it.  Using offset and length to extract values
@@ -60,7 +75,6 @@ do
 
 		if [ "$SUB_IP" == "$MAIN_IP_FROM" ]; then
 			echo -en "\n----------------\n----NOT SEND TO BACK: ($MAIN_IP_FROM)\n----------------\n\n" > /tmp/rsync.log
-			rm $TMP_FILE
 			continue
 		fi
 
@@ -68,13 +82,18 @@ do
 		then
 			if [ "$IP" != "$SUB_IP" ]; then
 				echo -en "\n----------------\n----ACTION: ($action)\n----FILE: ($file)\n----SEND TO: $SUB_USER@$SUB_IP:$SUB_DEST\n----------------\n\n" > /tmp/rsync.log
-				rsync -avu --delete $MySyncDirectory $SUB_USER@$SUB_IP:$SUB_DEST --log-file=/tmp/rsync.log
+				rsync -avu --inplace --delete $MySyncDirectory $SUB_USER@$SUB_IP:$SUB_DEST --log-file=/tmp/rsync.log
 			fi
-			
+
 		else
 			echo "ERROR connection $SUB_IP" > /tmp/rsync.log
 		fi
-	done	
+	done
+
+	echo -en "\n----------------\n----DELETE TMP FILE\n----rm $TMP_FILE\n----------------\n\n" > /tmp/rsync.log
+	rm $TMP_FILE
+	LAST_FILE=$file
+
 done
 
 
