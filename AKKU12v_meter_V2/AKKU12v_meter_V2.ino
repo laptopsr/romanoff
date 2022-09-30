@@ -326,7 +326,6 @@ void loop(void) {
 void getNow()
 {
     bat       = analogRead(AKKU);
-    volt      = bat * 0.0179265;
 
     //
     float vmin    = 11;
